@@ -1,4 +1,6 @@
-﻿using KenticoCloud.Delivery.Configuration;
+﻿using System.Net.Http;
+using KenticoCloud.Delivery.CodeFirst;
+using KenticoCloud.Delivery.ContentLinks;
 using KenticoCloud.Delivery.InlineContentItems;
 using KenticoCloud.Delivery.ResiliencePolicy;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,7 +11,7 @@ namespace KenticoCloud.Delivery
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddDeliveryClient(this IServiceCollection services, BuildDeliveryOptions buildDeliveryOptions = null)
+        public static IServiceCollection AddDeliveryClient(this IServiceCollection services, BuildDeliveryOptions buildDeliveryOptions)
         {
             var options = BuildOptions(buildDeliveryOptions);
 
@@ -24,21 +26,26 @@ namespace KenticoCloud.Delivery
 
         private static void RegisterDependencies(IServiceCollection services, DeliveryOptions options = null)
         {
-            services.AddOptions();
+            
             if (options != null)
             {
                 services.TryAddSingleton<IOptions<DeliveryOptions>>(new OptionsWrapper<DeliveryOptions>(options));
             }
+            else
+            {
+                services.AddOptions();
+            }
 
-            services.TryAddSingleton(serviceProvider => (IContentLinkUrlResolver)null);
-            services.TryAddSingleton(serviceProvider => (ICodeFirstTypeProvider)null);
+            services.TryAddSingleton<IContentLinkUrlResolver, DefaultContentLinkUrlResolver>();
+            services.TryAddSingleton<ICodeFirstTypeProvider, DefaultTypeProvider>();
+            services.TryAddSingleton(new HttpClient());
             services.TryAddSingleton<IInlineContentItemsResolver<object>, ReplaceWithWarningAboutRegistrationResolver>();
             services.TryAddSingleton<IInlineContentItemsResolver<UnretrievedContentItem>, ReplaceWithWarningAboutUnretrievedItemResolver>();
-            services.TryAddTransient<IInlineContentItemsProcessor, InlineContentItemsProcessor>();
-            services.TryAddTransient<ICodeFirstModelProvider, CodeFirstModelProvider>();
+            services.TryAddSingleton<IInlineContentItemsProcessor, InlineContentItemsProcessor>();
+            services.TryAddSingleton<ICodeFirstModelProvider, CodeFirstModelProvider>();
             services.TryAddSingleton<ICodeFirstPropertyMapper, CodeFirstPropertyMapper>();
             services.TryAddSingleton<IResiliencePolicyProvider, DefaultResiliencePolicyProvider>();
-            services.TryAddTransient<IDeliveryClient, DeliveryClient>();
+            services.TryAddSingleton<IDeliveryClient, DeliveryClient>();
         }
 
         private static DeliveryOptions BuildOptions(BuildDeliveryOptions buildDeliveryOptions)
