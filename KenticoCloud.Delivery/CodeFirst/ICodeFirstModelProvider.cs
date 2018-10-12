@@ -15,7 +15,5 @@ namespace KenticoCloud.Delivery
         /// <param name="modularContent">Modular content items.</param>
         /// <returns>Strongly typed POCO model of the generic type.</returns>
         T GetContentItemModel<T>(JToken item, JToken modularContent);
-
-        ICodeFirstTypeProvider GetTypeProvider();
     }
 }

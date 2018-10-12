@@ -1,6 +1,4 @@
-﻿using Polly.Registry;
-
-namespace KenticoCloud.Delivery
+﻿namespace KenticoCloud.Delivery
 {
     /// <summary>
     /// Keeps settings which are provided by customer or have default values, used in <see cref="DeliveryClient"/>.
@@ -27,6 +25,7 @@ namespace KenticoCloud.Delivery
         /// </summary>
         public string PreviewApiKey { get; set; }
 
+        // this property enables user to have preview API key set and not use it
         /// <summary>
         /// Gets or sets whether the Preview API should be used. If TRUE, <see cref="PreviewApiKey"/> needs to be set as well.
         /// </summary>
@@ -37,6 +36,7 @@ namespace KenticoCloud.Delivery
         /// </summary>
         public bool WaitForLoadingNewContent { get; set; }
 
+        // this property enables user to have secured production API key set and not use it
         /// <summary>
         /// Gets or sets whether the production Delivery API will be accessed using an API key.
         /// </summary>

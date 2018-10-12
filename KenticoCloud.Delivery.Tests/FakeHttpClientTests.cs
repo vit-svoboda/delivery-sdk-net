@@ -28,14 +28,12 @@ namespace KenticoCloud.Delivery.Tests
 
             var client = new DeliveryClient(
                 deliveryOptions,
+                httpClient,
                 contentLinkUrlResolver,
                 null,
                 codeFirstModelProvider,
                 resiliencePolicyProvider
-            )
-            {
-                HttpClient = httpClient,
-            };
+            );
 
             // Act
             var contentItem = await client.GetItemAsync("test");

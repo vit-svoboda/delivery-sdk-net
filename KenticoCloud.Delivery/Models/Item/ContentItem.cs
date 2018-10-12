@@ -14,22 +14,11 @@ namespace KenticoCloud.Delivery
         private readonly JToken _modularContentSource;
         private readonly IContentLinkUrlResolver _contentLinkUrlResolver;
         private readonly ICodeFirstModelProvider _codeFirstModelProvider;
-        private ContentLinkResolver _contentLinkResolver;
 
         private ContentItemSystemAttributes _system;
         private JToken _elements;
 
-        internal ContentLinkResolver ContentLinkResolver
-        {
-            get
-            {
-                if (_contentLinkResolver == null && _contentLinkUrlResolver != null)
-                {
-                    _contentLinkResolver = new ContentLinkResolver(_contentLinkUrlResolver);
-                }
-                return _contentLinkResolver;
-            }
-        }
+        internal Lazy<ContentLinkResolver> ContentLinkResolver;
 
         /// <summary>
         /// Gets the system attributes of the content item.
@@ -55,30 +44,16 @@ namespace KenticoCloud.Delivery
         /// <param name="client">The client that retrieved the content item.</param>
         internal ContentItem(JToken source, JToken modularContentSource, IContentLinkUrlResolver contentLinkUrlResolver, ICodeFirstModelProvider codeFirstModelProvider)
         {
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
+            _source = source ?? throw new ArgumentNullException(nameof(source));
+            _modularContentSource = modularContentSource ?? throw new ArgumentNullException(nameof(modularContentSource));
+            _codeFirstModelProvider = codeFirstModelProvider ?? throw new ArgumentNullException(nameof(codeFirstModelProvider));
 
-            if (modularContentSource == null)
-            {
-                throw new ArgumentNullException(nameof(modularContentSource));
-            }
-
-            if (contentLinkUrlResolver == null)
-            {
-                throw new ArgumentNullException(nameof(contentLinkUrlResolver));
-            }
-
-            if (codeFirstModelProvider == null)
-            {
-                throw new ArgumentNullException(nameof(codeFirstModelProvider));
-            }
-
-            _source = source;
-            _modularContentSource = modularContentSource;
             _contentLinkUrlResolver = contentLinkUrlResolver;
-            _codeFirstModelProvider = codeFirstModelProvider;
+            ContentLinkResolver = new Lazy<ContentLinkResolver>(() =>
+                _contentLinkUrlResolver != null
+                    ? new ContentLinkResolver(_contentLinkUrlResolver)
+                    : null
+            );
         }
 
         /// <summary>
@@ -109,7 +84,7 @@ namespace KenticoCloud.Delivery
                 return value;
             }
 
-            return contentLinkResolver.ResolveContentLinks(value, links);
+            return contentLinkResolver.Value.ResolveContentLinks(value, links);
         }
 
         /// <summary>
