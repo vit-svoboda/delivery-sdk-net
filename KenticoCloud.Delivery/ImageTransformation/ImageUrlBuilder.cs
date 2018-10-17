@@ -9,7 +9,7 @@ namespace KenticoCloud.Delivery.ImageTransformation
     /// <summary>
     /// Provides a builder for Image Transformations for Kentico Cloud Delivery API.
     /// </summary>
-    public sealed class ImageUrlBuilder
+    internal sealed class ImageUrlBuilder
     {
         private readonly Uri _assetUrl;
         private readonly Dictionary<string, StringValues> _queryParameters = new Dictionary<string, StringValues>();
