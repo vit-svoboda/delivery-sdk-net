@@ -1,9 +1,9 @@
 # Kentico Cloud Delivery .NET SDK
 
-[![Build status](https://ci.appveyor.com/api/projects/status/3m3q2ads2y43bh9o/branch/master?svg=true)](https://ci.appveyor.com/project/kentico/deliver-net-sdk/branch/master) 
-[![Forums](https://img.shields.io/badge/chat-on%20forums-orange.svg)](https://forums.kenticocloud.com) 
+[![Build status](https://ci.appveyor.com/api/projects/status/3m3q2ads2y43bh9o/branch/master?svg=true)](https://ci.appveyor.com/project/kentico/deliver-net-sdk/branch/master)
+[![Forums](https://img.shields.io/badge/chat-on%20forums-orange.svg)](https://forums.kenticocloud.com)
 
-| Paradigm        | Package  | Downloads | Documentation | 
+| Paradigm        | Package  | Downloads | Documentation |
 | ------------- |:-------------:| :-------------:|  :-------------:|
 | Async         | [![NuGet](https://img.shields.io/nuget/v/KenticoCloud.Delivery.svg)](https://www.nuget.org/packages/KenticoCloud.Delivery) | [![NuGet](https://img.shields.io/nuget/dt/kenticocloud.delivery.svg)](https://www.nuget.org/packages/KenticoCloud.Delivery) | [📖](#using-the-deliveryclient) |
 | Reactive      | [![NuGet](https://img.shields.io/nuget/v/KenticoCloud.Delivery.Rx.svg)](https://www.nuget.org/packages/KenticoCloud.Delivery.Rx) | [![NuGet](https://img.shields.io/nuget/dt/kenticocloud.delivery.Rx.svg)](https://www.nuget.org/packages/KenticoCloud.Delivery.Rx) | [📖](#using-the-kenticoclouddeliveryrx-reactive-library) |
@@ -28,18 +28,33 @@ The `DeliveryClient` class is the main class of the SDK. Using this class, you c
 To create an instance of the class, you need to provide a [project ID](https://developer.kenticocloud.com/v1/docs/getting-content#section-getting-content-items).
 
 ```csharp
-// Initializes an instance of the DeliveryClient client
-DeliveryClient client = new DeliveryClient("975bf280-fd91-488c-994c-2f04416e5ee3");
+// Initializes an instance of the DeliveryClient client by building it with DeliveryClientBuilder class
+IDeliveryClient client = DeliveryClientBuilder.WithProjectId("YOUR_PROJECT_ID").Build();
 ```
 
-You can also provide the project ID and other parameters by passing the [`DeliveryOptions`](https://github.com/Kentico/delivery-sdk-net/blob/master/KenticoCloud.Delivery/Configuration/DeliveryOptions%20.cs) object to the class constructor. The `DeliveryOptions` object can be used to set the following parameters:
+You can also provide the project ID and other parameters by passing a function, that returns [`DeliveryOptions`](https://github.com/Kentico/delivery-sdk-net/blob/master/KenticoCloud.Delivery/Configuration/DeliveryOptions%20.cs) object, to the `DeliveryClientBuilder.WithOptions` method. It is recommended to create the `DeliveryOptions` instance using the `DeliveryOptionsBuilder` class. It is used to set the following parameters:
 
 * `ProjectId` – sets the project identifier.
-* `UsePreviewApi` – determines whether to use the Delivery Preview API. See [previewing unpublished content](#previewing-unpublished-content).
 * `PreviewApiKey` – sets the Delivery Preview API key. See [previewing unpublished content](#previewing-unpublished-content).
+* `UsePreviewApi` – determines whether to use the Delivery Preview API. See [previewing unpublished content](#previewing-unpublished-content).
+* `SecuredProductionApiKey` – sets the production Delivery API key
 * `UseSecuredProductionApi` – determines whether to authenticate against the production Delivery API with an API key.
-* `SecuredProductionApiKey` – sets the production Delivery API key.
-* `WaitForLoadingNewContent` – makes the client instance wait while fetching updated content, useful when acting upon [webhook calls](https://developticocloud.com/docs/webhooks#section-requesting-new-content).
+* `EnableResilienceLogic` – determines whether HTTP requests will use a retry logic.
+* `WaitForLoadingNewContent` – makes the client instance wait while fetching updated content, useful when acting upon [webhook calls](https://developer.kenticocloud.com/docs/webhooks).
+* `MaxRetryAttempts` – sets the maximum retry attempts.
+* `ProductionEndpoint` – sets a custom production endpoint address.
+* `PreviewEndpoint` – sets a custom preview endpoint address.
+
+```csharp
+DeliveryClientBuilder
+	.WithOptions(builder =>
+		builder
+			.WithProjectId("YOUR_PROJECT_ID")
+			.UseProductionApi
+			.WithMaxRetryAttempts(maxRetryAttempts)
+			.Build())
+	.Build();
+```
 
 For advanced configuration options using Dependency Injection and ASP.NET Core Configuration API, see the SDK's [wiki](https://github.com/Kentico/delivery-sdk-net/wiki/Using-the-ASP.NET-Core-Configuration-API-and-DI-to-Instantiate-the-DeliveryClient).
 
@@ -102,12 +117,12 @@ See [Working with Strongly Typed Models](https://github.com/Kentico/delivery-sdk
 
 ## Previewing unpublished content
 
-To retrieve unpublished content, you need to create a `DeliveryClient` with both Project ID and Preview API key. Each Kentico Cloud project has its own Preview API key. 
+To retrieve unpublished content, you need to create a `DeliveryClient` with both Project ID and Preview API key. Each Kentico Cloud project has its own Preview API key.
 
 ```csharp
 // Note: Within a single project, we recommend that you work with only
 // either the production or preview Delivery API, not both.
-DeliveryClient client = new DeliveryClient("YOUR_PROJECT_ID", "YOUR_PREVIEW_API_KEY");
+DeliveryClient client = DeliveryClientBuilder.WithOptions(builder => builder.WithProjectId("YOUR_PROJECT_ID").UsePreviewApi("YOUR_PREVIEW_API_KEY"));
 ```
 
 For more details, see [Previewing unpublished content using the Delivery API](https://developer.kenticocloud.com/docs/preview-content-via-api).
@@ -216,7 +231,7 @@ articleItem.GetModularContent("related_articles")
 ```
 
 ## Using the Image transformations
-The [ImageUrlBuilder class](https://github.com/Kentico/delivery-sdk-net/blob/master/KenticoCloud.Delivery/ImageTransformation/ImageUrlBuilder.cs) exposes methods for applying image transformations on the Asset URL. 
+The [ImageUrlBuilder class](https://github.com/Kentico/delivery-sdk-net/blob/master/KenticoCloud.Delivery/ImageTransformation/ImageUrlBuilder.cs) exposes methods for applying image transformations on the Asset URL.
 
 ```csharp
 string assetUrl = articleItem.GetAssets("teaser_image").First().Url;
@@ -258,7 +273,7 @@ public DeliveryObservableProxy DeliveryObservableProxy => new DeliveryObservable
 The `DeliveryObservableProxy` class exposes methods that mirror the public methods of the [DeliveryClient](https://github.com/Kentico/delivery-sdk-net/blob/master/KenticoCloud.Delivery/DeliveryClient.cs). The methods have the same names, with an `Observable` suffix. They call the `DeliveryClient` methods in the background.
 
 ```csharp
-IObservable<Article> articlesWithBaristaPersona = 
+IObservable<Article> articlesWithBaristaPersona =
 	DeliveryObservableProxy.GetItemsObservable<Article>(new ContainsFilter("elements.personas", "barista"));
 ```
 
@@ -271,7 +286,7 @@ This repository is configured to generate a SourceLink tag in the NuGet package 
 ### How to configure SourceLink
 1. Open a solution with a project referencing the KenticoCloud.Delivery (or KenticoCloud.Delivery.RX) Nuget package
 2. Open Tools -> Options -> Debugging -> General
-    * Clear **Enable Just My Code** 
+    * Clear **Enable Just My Code**
     * Select **Enable Source Link Support**
     * (Optional) Clear **Require source files to exactly match the original version**
 3. Build your solution
@@ -306,7 +321,7 @@ Check out the [contributing](https://github.com/Kentico/delivery-sdk-net/blob/ma
 ### Wall of Fame
 We would like to express our thanks to the following people who contributed and made the project possible:
 
-- [Jarosław Jarnot](https://github.com/jjarnot-vimanet) - [Vimanet](http://vimanet.com) 
+- [Jarosław Jarnot](https://github.com/jjarnot-vimanet) - [Vimanet](http://vimanet.com)
 - [Varinder Singh](https://github.com/VarinderS) - [Kudos Web](http://www.kudosweb.com)
 - [Charith Sooriyaarachchi](https://github.com/charithsoori) - [99X Technology](http://www.99xtechnology.com/)
 
