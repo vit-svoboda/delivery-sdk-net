@@ -32,12 +32,12 @@ To create an instance of the class, you need to provide a [project ID](https://d
 IDeliveryClient client = DeliveryClientBuilder.WithProjectId("YOUR_PROJECT_ID").Build();
 ```
 
-You can also provide the project ID and other parameters by passing a function, that returns [`DeliveryOptions`](https://github.com/Kentico/delivery-sdk-net/blob/master/KenticoCloud.Delivery/Configuration/DeliveryOptions%20.cs) object, to the `DeliveryClientBuilder.WithOptions` method. It is recommended to create the `DeliveryOptions` instance using the `DeliveryOptionsBuilder` class. It is used to set the following parameters:
+You can also provide the project ID and other parameters by passing a function that returns [`DeliveryOptions`](https://github.com/Kentico/delivery-sdk-net/blob/master/KenticoCloud.Delivery/Configuration/DeliveryOptions%20.cs) object to the `DeliveryClientBuilder.WithOptions` method. It is recommended to create the `DeliveryOptions` instance using the `DeliveryOptionsBuilder` class so it leads you to a correct `DeliveryClient` configuration. It is used to set the following parameters:
 
 * `ProjectId` – sets the project identifier.
 * `PreviewApiKey` – sets the Delivery Preview API key. See [previewing unpublished content](#previewing-unpublished-content).
 * `UsePreviewApi` – determines whether to use the Delivery Preview API. See [previewing unpublished content](#previewing-unpublished-content).
-* `SecuredProductionApiKey` – sets the production Delivery API key
+* `SecuredProductionApiKey` – sets the production Delivery API key.
 * `UseSecuredProductionApi` – determines whether to authenticate against the production Delivery API with an API key.
 * `EnableResilienceLogic` – determines whether HTTP requests will use a retry logic.
 * `WaitForLoadingNewContent` – makes the client instance wait while fetching updated content, useful when acting upon [webhook calls](https://developer.kenticocloud.com/docs/webhooks).
@@ -47,13 +47,14 @@ You can also provide the project ID and other parameters by passing a function, 
 
 ```csharp
 DeliveryClientBuilder
-	.WithOptions(builder =>
-		builder
-			.WithProjectId("YOUR_PROJECT_ID")
-			.UseProductionApi
-			.WithMaxRetryAttempts(maxRetryAttempts)
-			.Build())
-	.Build();
+   .WithOptions(optionsBuilder =>
+      optionsBuilder
+         .WithProjectId("YOUR_PROJECT_ID")
+	 .UseProductionApi
+	 .EnableResilienceLogic
+	 .WithMaxRetryAttempts(maxRetryAttempts)
+	 .Build())
+   .Build();
 ```
 
 For advanced configuration options using Dependency Injection and ASP.NET Core Configuration API, see the SDK's [wiki](https://github.com/Kentico/delivery-sdk-net/wiki/Using-the-ASP.NET-Core-Configuration-API-and-DI-to-Instantiate-the-DeliveryClient).
