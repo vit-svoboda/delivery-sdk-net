@@ -49,7 +49,7 @@ namespace KenticoCloud.Delivery
 
         IOptionsSteps IOptionsPreviewOrProductionSteps.UsePreviewApi(string previewApiKey)
         {
-            OptionsValidator.ValidateString(previewApiKey, nameof(previewApiKey));
+            previewApiKey.IsEmptyOrNull(nameof(previewApiKey));
             _deliveryOptions.PreviewApiKey = previewApiKey;
             _deliveryOptions.UsePreviewApi = true;
 
@@ -60,7 +60,7 @@ namespace KenticoCloud.Delivery
 
         IOptionsSteps IOptionsPreviewOrProductionSteps.UseSecuredProductionApi(string securedProductionApiKey)
         {
-            OptionsValidator.ValidateString(securedProductionApiKey, nameof(securedProductionApiKey));
+            securedProductionApiKey.IsEmptyOrNull(nameof(securedProductionApiKey));
             _deliveryOptions.SecuredProductionApiKey = securedProductionApiKey;
             _deliveryOptions.UseSecuredProductionApi = true;
 
@@ -69,7 +69,7 @@ namespace KenticoCloud.Delivery
 
         IOptionsSteps IOptionsSteps.WithCustomEndpoint(string endpoint)
         {
-            OptionsValidator.ValidateString(endpoint, nameof(endpoint));
+            endpoint.ValidateCustomEnpoint();
             if (_deliveryOptions.UsePreviewApi)
             {
                 _deliveryOptions.PreviewEndpoint = endpoint;

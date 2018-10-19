@@ -9,6 +9,7 @@ namespace KenticoCloud.Delivery
             ValidateMaxRetryAttempts(deliveryOptions.MaxRetryAttempts);
             ValidateProjectId(deliveryOptions.ProjectId);
             ValidateUseOfPreviewAndProductionApi(deliveryOptions);
+            IsKeySetForEnabledApi(deliveryOptions);
         }
 
         internal static void ValidateProjectId(string projectId)
@@ -40,11 +41,29 @@ namespace KenticoCloud.Delivery
             }
         }
 
-        internal static void ValidateString(this string value, string parameterName)
+        internal static void IsEmptyOrNull(this string value, string parameterName)
         {
-            if (string.IsNullOrEmpty(value))
+            if (value == null)
             {
                 throw new ArgumentNullException(parameterName, $"Parameter {parameterName} is not specified");
+            }
+
+            if (value == string.Empty)
+            {
+                throw new ArgumentException(parameterName, $"Parameter {parameterName} is not specified");
+            }
+        }
+
+        internal static void IsKeySetForEnabledApi(DeliveryOptions deliveryOptions)
+        {
+            if (deliveryOptions.UsePreviewApi && string.IsNullOrEmpty(deliveryOptions.PreviewApiKey))
+            {
+                throw new InvalidOperationException("The Preview API key must be set while using the Preview API");
+            }
+
+            if (deliveryOptions.UseSecuredProductionApi && string.IsNullOrEmpty(deliveryOptions.SecuredProductionApiKey))
+            {
+                throw new InvalidOperationException("The Secured Production API key must be set while using the Secured Production API");
             }
         }
 
@@ -53,6 +72,24 @@ namespace KenticoCloud.Delivery
             if (deliveryOptions.UsePreviewApi && deliveryOptions.UseSecuredProductionApi)
             {
                 throw new InvalidOperationException("Preview API and Secured Production API can't be used at the same time");
+            }
+        }
+
+        internal static void ValidateCustomEnpoint(this string customEndpoint)
+        {
+            if (customEndpoint == null)
+            {
+                throw new ArgumentNullException(nameof(customEndpoint), $"Parameter {nameof(customEndpoint)} is not specified");
+            }
+
+            if (customEndpoint == string.Empty)
+            {
+                throw new ArgumentException(nameof(customEndpoint), $"Parameter {nameof(customEndpoint)} is not specified");
+            }
+
+            if (Uri.TryCreate(customEndpoint, UriKind.Absolute, out var uriResult) && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps))
+            {
+                // throw new ArgumentException(nameof(customEndpoint), $"Parameter {nameof(customEndpoint)} has invalid format");
             }
         }
     }
